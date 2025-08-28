@@ -1,6 +1,0 @@
-@TaskBack_HostAddress = http://localhost:5261
-
-GET {{TaskBack_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
