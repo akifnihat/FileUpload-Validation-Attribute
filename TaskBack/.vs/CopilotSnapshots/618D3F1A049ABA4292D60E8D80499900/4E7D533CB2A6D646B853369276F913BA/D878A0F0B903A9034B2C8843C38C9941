@@ -1,0 +1,16 @@
+﻿using AutoMapper;
+using TaskBack.DTOs;
+using TaskBack.Models;
+
+namespace TaskBack.Mapping;
+
+public class MappingProfile : Profile
+{
+    public MappingProfile()
+    {
+        CreateMap<Slider, SliderReadDto>();
+        CreateMap<SliderCreateDto, Slider>();
+        CreateMap<SliderUpdateDto, Slider>();
+        CreateMap<Slider, SliderUpdateDto>();
+    }
+}

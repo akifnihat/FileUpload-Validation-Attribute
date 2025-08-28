@@ -1,0 +1,27 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TaskBack.DTOs;
+
+public class SliderUpdateDto
+{
+    [Required]
+    [StringLength(100)]
+    public string Title { get; set; } = default!;
+
+    [Required]
+    [Url]
+    [StringLength(500)]
+    public string ImageUrl { get; set; } = default!;
+
+    [Url]
+    [StringLength(500)]
+    public string? LinkUrl { get; set; }
+
+    [StringLength(1000)]
+    public string? Description { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int DisplayOrder { get; set; }
+
+    public bool IsActive { get; set; }
+}

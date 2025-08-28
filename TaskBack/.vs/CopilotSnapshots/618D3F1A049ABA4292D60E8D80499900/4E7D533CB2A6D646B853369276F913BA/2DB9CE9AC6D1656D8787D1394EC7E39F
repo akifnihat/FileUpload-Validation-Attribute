@@ -1,0 +1,31 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TaskBack.Models;
+
+public class Slider
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    public string Title { get; set; } = default!;
+
+    [Required]
+    [Url]
+    [StringLength(500)]
+    public string ImageUrl { get; set; } = default!;
+
+    [Url]
+    [StringLength(500)]
+    public string? LinkUrl { get; set; }
+
+    [StringLength(1000)]
+    public string? Description { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int DisplayOrder { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}

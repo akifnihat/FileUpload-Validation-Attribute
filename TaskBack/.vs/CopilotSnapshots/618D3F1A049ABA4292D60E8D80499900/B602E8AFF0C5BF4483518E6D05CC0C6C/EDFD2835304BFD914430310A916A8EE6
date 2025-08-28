@@ -1,0 +1,74 @@
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TaskBack.Data;
+using TaskBack.DTOs;
+using TaskBack.Models;
+
+namespace TaskBack.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class SlidersController : ControllerBase
+{
+    private readonly ApplicationDbContext _db;
+    private readonly IMapper _mapper;
+
+    public SlidersController(ApplicationDbContext db, IMapper mapper)
+    {
+        _db = db;
+        _mapper = mapper;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<SliderReadDto>>> GetAll()
+    {
+        var sliders = await _db.Sliders.AsNoTracking().OrderBy(s => s.DisplayOrder).ToListAsync();
+        return Ok(_mapper.Map<IEnumerable<SliderReadDto>>(sliders));
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<SliderReadDto>> Get(int id)
+    {
+        var slider = await _db.Sliders.FindAsync(id);
+        if (slider is null) return NotFound();
+        return Ok(_mapper.Map<SliderReadDto>(slider));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<SliderReadDto>> Create([FromBody] SliderCreateDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var entity = _mapper.Map<Slider>(dto);
+        entity.CreatedAt = DateTime.UtcNow;
+        _db.Sliders.Add(entity);
+        await _db.SaveChangesAsync();
+
+        var readDto = _mapper.Map<SliderReadDto>(entity);
+        return CreatedAtAction(nameof(Get), new { id = entity.Id }, readDto);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] SliderUpdateDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var entity = await _db.Sliders.FindAsync(id);
+        if (entity is null) return NotFound();
+
+        _mapper.Map(dto, entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var entity = await _db.Sliders.FindAsync(id);
+        if (entity is null) return NotFound();
+        _db.Sliders.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+}
