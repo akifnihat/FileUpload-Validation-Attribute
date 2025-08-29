@@ -1,0 +1,17 @@
+﻿using LayoutService_AdminPanel.Models.Common;
+
+namespace LayoutService_AdminPanel.Models
+{
+    // Slider modelində kiçik fərqləndirici dəyişikliklər
+    public class Slider:AuditEntity
+    {
+        public string? Title { get; set; } // Başlıq
+        public string? Description { get; set; } // Təsvir
+        public string? ImageUrl { get; set; } // Şəkil linki
+        public string? ButtonLink { get; set; } // Button üçün link
+        public string? ButtonText { get; set; } // Buttonun mətnini fərqli adlandırdım
+        public int Order { get; set; } // Sıra nömrəsi
+        // Fərqləndirici əlavə property
+        public bool IsActive { get; set; } = true; // Slider aktivdir?
+    }
+}

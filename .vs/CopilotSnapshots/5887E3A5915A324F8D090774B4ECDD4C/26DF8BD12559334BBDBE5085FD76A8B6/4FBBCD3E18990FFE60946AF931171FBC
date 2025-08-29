@@ -1,0 +1,51 @@
+﻿@using LayoutService_AdminPanel.Services
+@inject LayoutService layoutService
+@{
+    var settings = layoutService.GetSettings();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pustok</title>
+    <link rel="stylesheet" href="~/css/plugins.css" />
+    <link rel="stylesheet" href="~/css/main.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="~/image/favicon.ico" />
+</head>
+<body>
+    <div class="site-wrapper" id="top">
+        <header class="site-header">
+            <div class="container">
+                <a href="~/" class="site-brand">
+                    <img src="~/image/logo.png" alt="Pustok" />
+                </a>
+            </div>
+        </header>
+        <main role="main">
+            @RenderBody()
+        </main>
+        <footer class="site-footer">
+            <div class="container">
+                <div>
+                    <strong>Address:</strong> @(settings.ContainsKey("address") ? settings["address"] : "")
+                </div>
+                <div>
+                    <strong>Phone:</strong> @(settings.ContainsKey("phone") ? settings["phone"] : "")
+                </div>
+                <div>
+                    <strong>Email:</strong> @(settings.ContainsKey("email") ? settings["email"] : "")
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/js/plugins.js"></script>
+    <script src="~/js/ajax-mail.js"></script>
+    <script src="~/js/custom.js"></script>
+    <script src="~/js/main.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

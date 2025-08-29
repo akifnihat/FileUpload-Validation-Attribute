@@ -1,0 +1,16 @@
+﻿using LayoutService_AdminPanel.Data;
+
+namespace LayoutService_AdminPanel.Services
+{
+    // LayoutService-də funksiya adını və məntiqini fərqləndirdim
+    public class LayoutService(PustokDbContext pustokDbContext)
+    {
+        private readonly PustokDbContext _context = pustokDbContext;
+        // Fərqli funksiya adı və əlavə şərh
+        public Dictionary<string, string> GetAllSettings()
+        {
+            // Settings-ləri əldə edir
+            return _context.Settings.ToDictionary(x => x.Key, x => x.Value);
+        }
+    }
+}

@@ -1,0 +1,51 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+
+namespace LayoutService_AdminPanel.Validation
+{
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public sealed class FileValidationAttribute : ValidationAttribute
+    {
+        public string[] AllowedContentTypes { get; }
+        public long MaxBytes { get; }
+
+        public FileValidationAttribute(string[] allowedContentTypes, int maxMB = 2)
+        {
+            AllowedContentTypes = allowedContentTypes ?? Array.Empty<string>();
+            MaxBytes = maxMB * 1024L * 1024L;
+            ErrorMessage = $"Invalid file. Allowed types: {string.Join(", ", AllowedContentTypes)}. Max size: {maxMB}MB.";
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value is null) return ValidationResult.Success;
+
+            if (value is IFormFile file)
+            {
+                if (file.Length == 0)
+                    return new ValidationResult("Empty file is not allowed.");
+
+                if (file.Length > MaxBytes)
+                    return new ValidationResult(ErrorMessage);
+
+                if (AllowedContentTypes.Length > 0 && Array.IndexOf(AllowedContentTypes, file.ContentType) < 0)
+                    return new ValidationResult(ErrorMessage);
+
+                return ValidationResult.Success;
+            }
+
+            if (value is IEnumerable<IFormFile> files)
+            {
+                foreach (var f in files)
+                {
+                    if (f is null) continue;
+                    var result = IsValid(f, validationContext);
+                    if (result != ValidationResult.Success) return result;
+                }
+                return ValidationResult.Success;
+            }
+
+            return new ValidationResult("Unsupported file type.");
+        }
+    }
+}

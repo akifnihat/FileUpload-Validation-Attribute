@@ -1,0 +1,25 @@
+﻿using Microsoft.AspNetCore.Http;
+
+namespace LayoutService_AdminPanel.Helpers
+{
+    public static class FileUploadHelper
+    {
+        public static async Task<string> SaveAsync(this IFormFile file, string rootPath, string folder)
+        {
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var directory = Path.Combine(rootPath, folder);
+            Directory.CreateDirectory(directory);
+            var fullPath = Path.Combine(directory, fileName);
+            using var stream = new FileStream(fullPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+            return fileName;
+        }
+
+        public static void DeleteFile(string rootPath, string folder, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName)) return;
+            var fullPath = Path.Combine(rootPath, folder, fileName);
+            if (File.Exists(fullPath)) File.Delete(fullPath);
+        }
+    }
+}

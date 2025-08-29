@@ -1,0 +1,133 @@
+﻿using LayoutService_AdminPanel.Data;
+using LayoutService_AdminPanel.Helpers;
+using LayoutService_AdminPanel.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace LayoutService_AdminPanel.Areas.Manage.Controllers
+{
+    [Area("Manage")]
+    public class BookController : Controller
+    {
+        private readonly PustokDbContext _context;
+        private readonly IWebHostEnvironment _env;
+        private const string ProductFolder = "image/products";
+
+        public BookController(PustokDbContext context, IWebHostEnvironment env)
+        {
+            _context = context;
+            _env = env;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var books = await _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Genre)
+                .AsNoTracking()
+                .ToListAsync();
+            return View(books);
+        }
+
+        public async Task<IActionResult> Create()
+        {
+            await PopulateLookups();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Book model)
+        {
+            await PopulateLookups();
+            if (!ModelState.IsValid) return View(model);
+
+            if (model.MainImage is null || model.HoverImage is null)
+            {
+                ModelState.AddModelError(string.Empty, "Main and hover images are required.");
+                return View(model);
+            }
+
+            model.MainImageUrl = await model.MainImage.SaveAsync(_env.WebRootPath, ProductFolder);
+            model.HoverImageUrl = await model.HoverImage.SaveAsync(_env.WebRootPath, ProductFolder);
+
+            if (model.ImageFiles != null && model.ImageFiles.Count > 0)
+            {
+                model.BookImages = new List<BookImage>();
+                foreach (var file in model.ImageFiles)
+                {
+                    var fileName = await file.SaveAsync(_env.WebRootPath, ProductFolder);
+                    model.BookImages.Add(new BookImage { ImageUrl = fileName });
+                }
+            }
+
+            _context.Books.Add(model);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var book = await _context.Books
+                .Include(b => b.BookImages)
+                .FirstOrDefaultAsync(b => b.Id == id);
+            if (book == null) return NotFound();
+            await PopulateLookups();
+            return View(book);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Book model)
+        {
+            if (id != model.Id) return BadRequest();
+            var book = await _context.Books.Include(b => b.BookImages).FirstOrDefaultAsync(b => b.Id == id);
+            if (book == null) return NotFound();
+            await PopulateLookups();
+
+            if (!ModelState.IsValid) return View(model);
+
+            // Update scalar properties
+            book.Title = model.Title;
+            book.AuthorId = model.AuthorId;
+            book.GenreId = model.GenreId;
+            book.Description = model.Description;
+            book.Price = model.Price;
+            book.DiscountPercentage = model.DiscountPercentage;
+            book.IsFeatured = model.IsFeatured;
+            book.IsNew = model.IsNew;
+            book.InStock = model.InStock;
+
+            // Replace images if provided
+            if (model.MainImage != null)
+            {
+                FileUploadHelper.DeleteFile(_env.WebRootPath, ProductFolder, book.MainImageUrl);
+                book.MainImageUrl = await model.MainImage.SaveAsync(_env.WebRootPath, ProductFolder);
+            }
+
+            if (model.HoverImage != null)
+            {
+                FileUploadHelper.DeleteFile(_env.WebRootPath, ProductFolder, book.HoverImageUrl);
+                book.HoverImageUrl = await model.HoverImage.SaveAsync(_env.WebRootPath, ProductFolder);
+            }
+
+            if (model.ImageFiles != null && model.ImageFiles.Count > 0)
+            {
+                foreach (var file in model.ImageFiles)
+                {
+                    var fileName = await file.SaveAsync(_env.WebRootPath, ProductFolder);
+                    book.BookImages.Add(new BookImage { ImageUrl = fileName });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+
+        private async Task PopulateLookups()
+        {
+            ViewBag.Authors = await _context.Authors.AsNoTracking().ToListAsync();
+            ViewBag.Genres = await _context.Genres.AsNoTracking().ToListAsync();
+        }
+    }
+}

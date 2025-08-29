@@ -1,0 +1,11 @@
+﻿using LayoutService_AdminPanel.Models;
+
+namespace LayoutService_AdminPanel.ViewModels
+{
+    // BookDetailVm-də property adlarını fərqli etdim və şərh əlavə etdim
+    public class BookDetailVm
+    {
+        public List<Book> SimilarBooks { get; set; } // RelatedBooks əvəzinə SimilarBooks
+        public Book MainBook { get; set; } // Book əvəzinə MainBook
+    }
+}
